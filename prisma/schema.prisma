@@ -1,0 +1,330 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["referentialActions"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum EnumSubscribeStatus {
+  CANCELED
+  PENDING
+  PAYED
+  ACTIVE
+  EXPIRED
+}
+
+model Tariff {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  name        String @unique
+  slug        String @unique
+  duration    Int
+  price       Int
+  salePrice   Int?   @map("sale_price")
+  description String
+
+  isVisible Boolean @default(false) @map("is_visible")
+
+  subscribe   Subscribe @relation(fields: [subscribeId], references: [id])
+  subscribeId Int       @unique @map("subscribe_id")
+}
+
+model Subscribe {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  status EnumSubscribeStatus @default(PENDING)
+
+  tariff Tariff?
+
+  user   User? @relation(fields: [userId], references: [id])
+  userId Int?  @map("user_id")
+}
+
+model Card {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  number String @unique
+  owner  String
+  month  Int
+  year   Int
+  cvv    Int
+
+  isMain Boolean @default(false) @map("is_main")
+
+  user   User? @relation(fields: [userId], references: [id])
+  userId Int?  @map("user_id")
+}
+
+model Promocode {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  sale        Int
+  code        String    @unique
+  expiresAt   DateTime? @map("expires_at")
+  description String?
+
+  isVisible Boolean @default(false) @map("is_visible")
+
+  user   User? @relation(fields: [userId], references: [id])
+  userId Int?  @map("user_id")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  login      String      @unique
+  email      String      @unique
+  password   String
+  avatarPath String      @default("/uploads/avatars/default-avatar.png")
+  promocodes Promocode[]
+  cards      Card[]
+
+  subscribes Subscribe[]
+
+  isAdmin      Boolean @default(false) @map("is_admin")
+  isSubscribed Boolean @default(true) @map("is_subscribed")
+
+  isVisible Boolean @default(false) @map("is_visible")
+}
+
+model Group {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  name        String  @unique
+  slug        String  @unique
+  description String?
+  icon        String?
+
+  media Media[]
+
+  isVisible Boolean @default(false) @map("is_visible")
+}
+
+model Genre {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  name        String  @unique
+  slug        String  @unique
+  description String?
+  icon        String?
+
+  media Media[]
+
+  isVisible Boolean @default(false) @map("is_visible")
+}
+
+model Actor {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  name  String  @unique
+  slug  String  @unique
+  photo String?
+
+  media Media[]
+
+  isVisible Boolean @default(false) @map("is_visible")
+}
+
+model Director {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  name  String  @unique
+  slug  String  @unique
+  photo String?
+
+  media Media[]
+
+  isVisible Boolean @default(false) @map("is_visible")
+}
+
+model Producer {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  name  String  @unique
+  slug  String  @unique
+  photo String?
+
+  media Media[]
+
+  isVisible Boolean @default(false) @map("is_visible")
+}
+
+model Scenarist {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  name  String  @unique
+  slug  String  @unique
+  photo String?
+
+  media Media[]
+
+  isVisible Boolean @default(false) @map("is_visible")
+}
+
+model Operator {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  name  String  @unique
+  slug  String  @unique
+  photo String?
+
+  media Media[]
+
+  isVisible Boolean @default(false) @map("is_visible")
+}
+
+model SourceItem {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  quality String
+  url     String
+
+  source   Source? @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  sourceId Int?    @map("source_id")
+
+  @@map("Source_item")
+}
+
+model Source {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  language String
+  items    SourceItem[]
+
+  episodeTrailer   Episode? @relation(fields: [episodeTrailerId], references: [id], name: "EpisodeTrailers", onDelete: Cascade)
+  episodeTrailerId Int?     @map("episode_trailer_id")
+  episodeVideo     Episode? @relation(fields: [episodeVideoId], references: [id], name: "EpisodeVideos", onDelete: Cascade)
+  episodeVideoId   Int?     @map("episode_video_id")
+
+  movieTrailer   Movie? @relation(fields: [movieTrailerId], references: [id], name: "MovieTrailers", onDelete: Cascade)
+  movieTrailerId Int?   @map("movie_trailer_id")
+  movieVideo     Movie? @relation(fields: [movieVideoId], references: [id], name: "MovieVideos", onDelete: Cascade)
+  movieVideoId   Int?   @map("movie_video_id")
+}
+
+model Episode {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  number      Int
+  excerpt     String
+  description String
+  poster      String
+  bigPoster   String
+  duration    Int
+
+  trailers Source[] @relation("EpisodeTrailers")
+  videos   Source[] @relation("EpisodeVideos")
+
+  rating Int?
+
+  views Int @default(0)
+  likes Int @default(0)
+
+  releaseDate String? @map("release_date")
+
+  isSendTelegram Boolean @default(false) @map("is_send_telegram")
+
+  season   Season? @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  seasonId Int?    @map("season_id")
+}
+
+model Movie {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  trailers Source[] @relation("MovieTrailers")
+  videos   Source[] @relation("MovieVideos")
+
+  duration Int?
+
+  releaseDate String? @map("release_date")
+
+  isSendTelegram Boolean @default(false) @map("is_send_telegram")
+
+  media   Media? @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  mediaId Int?   @unique @map("media_id")
+}
+
+model Season {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  number Int
+
+  episodes Episode[]
+
+  media   Media? @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  mediaId Int?   @map("media_id")
+}
+
+model Media {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  name        String @unique
+  slug        String @unique
+  excerpt     String
+  description String
+  poster      String
+  bigPoster   String
+
+  year      Int?
+  age       Int?
+  countries String[]
+
+  movie   Movie?
+  seasons Season[]
+
+  averageRating Int? @map("average_rating")
+  totalViews    Int  @default(0) @map("total_views")
+  totalLikes    Int  @default(0) @map("total_likes")
+
+  isMovie  Boolean @default(false)
+  isSeries Boolean @default(false)
+
+  genres     Genre[]
+  actors     Actor[]
+  directors  Director[]
+  producers  Producer[]
+  operators  Operator[]
+  scenarists Scenarist[]
+  groups     Group[]
+
+  isVisible Boolean @default(false) @map("is_visible")
+}
