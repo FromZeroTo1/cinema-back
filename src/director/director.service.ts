@@ -4,8 +4,9 @@ import { PaginationService } from 'src/pagination/pagination.service'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { EnumSort, QueryDto } from 'src/query-dto/query.dto'
 import { generateSlug } from 'src/utils/generate-slug'
-import { directorFullestObject, directorObject } from './object/director.object'
 import { UpdateDirectorDto } from './dto/update-director.dto'
+import { directorDtoObject } from './object/director-dto.object'
+import { directorFullestObject, directorObject } from './object/director.object'
 
 @Injectable()
 export class DirectorService {
@@ -28,7 +29,7 @@ export class DirectorService {
 		})
 
 		return {
-			directors,
+			persons: directors,
 			length: await this.prisma.director.count({
 				where: filters,
 			}),
@@ -39,7 +40,7 @@ export class DirectorService {
 		const director = await this.prisma.director.findUnique({
 			where: {
 				slug,
-				isVisible: true
+				isVisible: true,
 			},
 			select: directorFullestObject,
 		})
@@ -84,7 +85,7 @@ export class DirectorService {
 
 	private getVisibleFilter(visibility: boolean): Prisma.DirectorWhereInput {
 		return {
-			isVisible: visibility
+			isVisible: visibility,
 		}
 	}
 
@@ -107,7 +108,7 @@ export class DirectorService {
 			where: {
 				id,
 			},
-			select: directorObject,
+			select: directorDtoObject,
 		})
 
 		if (!director) throw new NotFoundException('Director not found')
@@ -125,7 +126,7 @@ export class DirectorService {
 				id,
 			},
 			data: {
-				isVisible: isExists ? false : true
+				isVisible: isExists ? false : true,
 			},
 		})
 	}
@@ -150,7 +151,7 @@ export class DirectorService {
 				name: dto.name,
 				slug: generateSlug(dto.name),
 				photo: dto.photo,
-				isVisible: true
+				isVisible: true,
 			},
 		})
 	}

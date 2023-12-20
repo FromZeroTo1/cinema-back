@@ -7,6 +7,7 @@ import { EnumSort, QueryDto } from 'src/query-dto/query.dto'
 import { generateSlug } from 'src/utils/generate-slug'
 import { UpdateGenreDto } from './dto/update-genre.dto'
 import { genreFullestObject, genreObject } from './object/genre.object'
+import { genreDtoObject } from './object/genre-dto.object'
 
 @Injectable()
 export class GenreService {
@@ -21,7 +22,7 @@ export class GenreService {
 
 		const filters = this.createFilter(dto)
 
-		const genres = await this.prisma.genre.findMany({
+		const affiliations = await this.prisma.genre.findMany({
 			where: filters,
 			orderBy: this.getSortOption(dto.sort),
 			skip,
@@ -30,7 +31,7 @@ export class GenreService {
 		})
 
 		return {
-			genres,
+			affiliations,
 			length: await this.prisma.genre.count({
 				where: filters,
 			}),
@@ -38,9 +39,9 @@ export class GenreService {
 	}
 
 	async getCollections() {
-		const { genres } = await this.getAll()
+		const { affiliations } = await this.getAll()
 		const collections = await Promise.all(
-			genres.map(async (genre) => {
+			affiliations.map(async (genre) => {
 				const mediaByGenre = await this.mediaService.getAll({
 					genre: genre.slug,
 				})
@@ -125,7 +126,7 @@ export class GenreService {
 
 	private getVisibleFilter(visibility: boolean): Prisma.GenreWhereInput {
 		return {
-			isVisible: visibility
+			isVisible: visibility,
 		}
 	}
 
@@ -148,7 +149,7 @@ export class GenreService {
 			where: {
 				id,
 			},
-			select: genreObject,
+			select: genreDtoObject,
 		})
 
 		if (!genre) throw new NotFoundException('Genre not found')
@@ -166,7 +167,7 @@ export class GenreService {
 				id,
 			},
 			data: {
-				isVisible: isExists ? false : true
+				isVisible: isExists ? false : true,
 			},
 		})
 	}
@@ -192,7 +193,7 @@ export class GenreService {
 				slug: generateSlug(dto.name),
 				description: dto.description,
 				icon: dto.icon,
-				isVisible: true
+				isVisible: true,
 			},
 		})
 	}

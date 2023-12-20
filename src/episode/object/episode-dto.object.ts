@@ -1,8 +1,7 @@
 import { Prisma } from '@prisma/client'
 import { sourceObject } from 'src/source/object/source.object'
 
-export const episodeObject: Prisma.EpisodeSelect = {
-	id: true,
+export const episodeDtoObject: Prisma.EpisodeSelect = {
 	number: true,
 	excerpt: true,
 	description: true,
@@ -11,10 +10,6 @@ export const episodeObject: Prisma.EpisodeSelect = {
 	duration: true,
 	trailers: { select: sourceObject },
 	videos: { select: sourceObject },
-	rating: true,
-	views: true,
-	likes: true,
-	releaseDate: true,
 	isVisible: true,
-	createdAt: true,
+	releaseDate: true,
 }

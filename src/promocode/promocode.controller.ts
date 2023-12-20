@@ -40,13 +40,11 @@ export class PromocodeController {
 	async toggleVisibility(@Param('id') id: string) {
 		return this.promocodeService.toggleVisibility(+id)
 	}
-
-	@UsePipes(new ValidationPipe())
 	@Post()
 	@HttpCode(200)
 	@Auth()
-	async create(@Body() dto: UpdatePromocodeDto) {
-		return this.promocodeService.create(dto)
+	async create() {
+		return this.promocodeService.create()
 	}
 
 	@UsePipes(new ValidationPipe())

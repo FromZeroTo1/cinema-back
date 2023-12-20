@@ -6,6 +6,7 @@ import { EnumSort, QueryDto } from 'src/query-dto/query.dto'
 import { generateSlug } from 'src/utils/generate-slug'
 import { UpdateActorDto } from './dto/update-actor.dto'
 import { actorFullestObject, actorObject } from './object/actor.object'
+import { actorDtoObject } from './object/actor-dto.object'
 
 @Injectable()
 export class ActorService {
@@ -28,7 +29,7 @@ export class ActorService {
 		})
 
 		return {
-			actors,
+			persons: actors,
 			length: await this.prisma.actor.count({
 				where: filters,
 			}),
@@ -107,7 +108,7 @@ export class ActorService {
 			where: {
 				id,
 			},
-			select: actorObject,
+			select: actorDtoObject,
 		})
 
 		if (!actor) throw new NotFoundException('Actor not found')

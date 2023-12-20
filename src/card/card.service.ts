@@ -1,8 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { PrismaService } from 'src/prisma/prisma.service'
-import { generateSlug } from 'src/utils/generate-slug'
-import { cardObject } from './object/card.object'
 import { UpdateCardDto } from './dto/update-card.dto'
+import { cardDtoObject } from './object/card-dto.object'
 
 @Injectable()
 export class CardService {
@@ -15,7 +14,7 @@ export class CardService {
 			where: {
 				id,
 			},
-			select: cardObject,
+			select: cardDtoObject,
 		})
 
 		if (!card) throw new NotFoundException('Card not found')
@@ -23,17 +22,18 @@ export class CardService {
 		return card
 	}
 
-	async create(dto: UpdateCardDto) {
-		return this.prisma.card.create({
+	async create() {
+		const card = await this.prisma.card.create({
 			data: {
-				number: dto.number,
-				owner: dto.owner,
-				month: dto.month,
-				year: dto.year,
-				cvv: dto.cvv,
-				isMain: dto.isMain,
+				number: '',
+				owner: '',
+				month: undefined,
+				year: undefined,
+				cvv: undefined,
 			},
 		})
+
+		return card.id
 	}
 
 	async update(id: number, dto: UpdateCardDto) {

@@ -2,10 +2,11 @@ import { Injectable, NotFoundException } from '@nestjs/common'
 import { Prisma } from '@prisma/client'
 import { PaginationService } from 'src/pagination/pagination.service'
 import { PrismaService } from 'src/prisma/prisma.service'
-import { QueryDto, EnumSort } from 'src/query-dto/query.dto'
+import { EnumSort, QueryDto } from 'src/query-dto/query.dto'
 import { generateSlug } from 'src/utils/generate-slug'
 import { UpdateProducerDto } from './dto/update-producer.dto'
-import { producerObject, producerFullestObject } from './object/producer.object'
+import { producerDtoObject } from './object/producer-dto.object'
+import { producerFullestObject, producerObject } from './object/producer.object'
 
 @Injectable()
 export class ProducerService {
@@ -28,7 +29,7 @@ export class ProducerService {
 		})
 
 		return {
-			producers,
+			persons: producers,
 			length: await this.prisma.producer.count({
 				where: filters,
 			}),
@@ -84,7 +85,7 @@ export class ProducerService {
 
 	private getVisibleFilter(visibility: boolean): Prisma.ProducerWhereInput {
 		return {
-			isVisible: visibility
+			isVisible: visibility,
 		}
 	}
 
@@ -107,7 +108,7 @@ export class ProducerService {
 			where: {
 				id,
 			},
-			select: producerObject,
+			select: producerDtoObject,
 		})
 
 		if (!producer) throw new NotFoundException('Producer not found')
@@ -125,7 +126,7 @@ export class ProducerService {
 				id,
 			},
 			data: {
-				isVisible: isExists ? false : true
+				isVisible: isExists ? false : true,
 			},
 		})
 	}
@@ -150,7 +151,7 @@ export class ProducerService {
 				name: dto.name,
 				slug: generateSlug(dto.name),
 				photo: dto.photo,
-				isVisible: true
+				isVisible: true,
 			},
 		})
 	}

@@ -11,52 +11,53 @@ import {
 	ValidationPipe,
 } from '@nestjs/common'
 import { Auth } from 'src/auth/jwt/decorators/auth.decorator'
-import { UpdateEpisodeDto } from './dto/update-episode.dto'
-import { EpisodeService } from './episode.service'
+import { UpdateSeasonDto } from './dto/update-season.dto'
+import { SeasonService } from './season.service'
 
-@Controller('episodes')
-export class EpisodeController {
-	constructor(private readonly episodeService: EpisodeService) {}
+@Controller('seasons')
+export class SeasonController {
+	constructor(private readonly seasonService: SeasonService) {}
+
 	// Admin Place
 
-	@Get('season/:id')
+	@Get('media/:id')
 	@Auth('admin')
 	async getAll(@Param('id') id: string) {
-		return this.episodeService.getAll(+id)
+		return this.seasonService.getAll(+id)
 	}
 
 	@Put('toggle-visibility/:id')
 	@HttpCode(200)
 	@Auth('admin')
 	async toggleVisibility(@Param('id') id: string) {
-		return this.episodeService.toggleVisibility(+id)
+		return this.seasonService.toggleVisibility(+id)
 	}
 
 	@Get(':id')
 	@Auth('admin')
 	async get(@Param('id') id: string) {
-		return this.episodeService.byId(+id)
+		return this.seasonService.byId(+id)
 	}
 
 	@Post(':id')
 	@HttpCode(200)
 	@Auth('admin')
 	async create(@Param('id') id: string) {
-		return this.episodeService.create(+id)
+		return this.seasonService.create(+id)
 	}
 
 	@UsePipes(new ValidationPipe())
 	@Put(':id')
 	@HttpCode(200)
 	@Auth('admin')
-	async update(@Param('id') id: string, @Body() dto: UpdateEpisodeDto) {
-		return this.episodeService.update(+id, dto)
+	async update(@Param('id') id: string, @Body() dto: UpdateSeasonDto) {
+		return this.seasonService.update(+id, dto)
 	}
 
 	@Delete(':id')
 	@HttpCode(200)
 	@Auth('admin')
 	async delete(@Param('id') id: string) {
-		return this.episodeService.delete(+id)
+		return this.seasonService.delete(+id)
 	}
 }

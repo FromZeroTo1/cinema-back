@@ -5,8 +5,6 @@ import {
 } from '@nestjs/common'
 import { Prisma } from '@prisma/client'
 import { hash } from 'argon2'
-import { MediaIdDto } from 'src/media/dto/media-id.dto'
-import { mediaObject } from 'src/media/object/media.object'
 import { PaginationService } from 'src/pagination/pagination.service'
 import { PrismaService } from 'src/prisma/prisma.service'
 import { EnumSort } from 'src/query-dto/query.dto'
@@ -90,7 +88,7 @@ export class UserService {
 				password: dto.newPassword ? await hash(dto.newPassword) : user.password,
 				avatarPath: dto.avatarPath,
 				cards: {
-					connect: dto.cardIds.map((cardId) => ({ id: cardId })),
+					connect: dto.cards.map((cardId) => ({ id: cardId })),
 				},
 			},
 		})
@@ -185,9 +183,7 @@ export class UserService {
 			isVisible: true,
 		}
 
-		userData.cards = this.createConnectObject(dto.cardIds)
-
-		userData.promocodes = this.createConnectObject(dto.promocodeIds)
+		userData.promocodes = this.createConnectObject(dto.promocodes)
 
 		return this.prisma.user.update({
 			where: {
@@ -205,5 +201,6 @@ export class UserService {
 		})
 	}
 
-	private createConnectObject = (ids: number[] | undefined) => ids && ids.length > 0 ? { connect: ids.map((id) => ({ id })) } : undefined
+	private createConnectObject = (ids: number[] | undefined) =>
+		ids && ids.length > 0 ? { connect: ids.map((id) => ({ id })) } : undefined
 }

@@ -3,7 +3,6 @@ import { ServeStaticModule } from '@nestjs/serve-static'
 import { path } from 'app-root-path'
 import { FileController } from './file.controller'
 import { FileService } from './file.service'
-import { PrismaService } from 'src/prisma/prisma.service'
 
 @Module({
 	imports: [
@@ -13,6 +12,6 @@ import { PrismaService } from 'src/prisma/prisma.service'
 		}),
 	],
 	controllers: [FileController],
-	providers: [FileService, PrismaService],
+	providers: [FileService],
 })
 export class FileModule {}

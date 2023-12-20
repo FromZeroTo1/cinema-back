@@ -27,5 +27,5 @@ export class UpdateProfileDto {
 	@ArrayNotEmpty()
 	@IsArray()
 	@IsNumber({}, { each: true })
-	cardIds?: number[]
+	cards?: number[]
 }

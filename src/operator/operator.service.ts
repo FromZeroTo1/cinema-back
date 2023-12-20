@@ -5,6 +5,7 @@ import { PrismaService } from 'src/prisma/prisma.service'
 import { EnumSort, QueryDto } from 'src/query-dto/query.dto'
 import { generateSlug } from 'src/utils/generate-slug'
 import { UpdateOperatorDto } from './dto/update-operator.dto'
+import { operatorDtoObject } from './object/operator-dto.object'
 import { operatorFullestObject, operatorObject } from './object/operator.object'
 
 @Injectable()
@@ -28,7 +29,7 @@ export class OperatorService {
 		})
 
 		return {
-			operators,
+			persons: operators,
 			length: await this.prisma.operator.count({
 				where: filters,
 			}),
@@ -84,7 +85,7 @@ export class OperatorService {
 
 	private getVisibleFilter(visibility: boolean): Prisma.OperatorWhereInput {
 		return {
-			isVisible: visibility
+			isVisible: visibility,
 		}
 	}
 
@@ -107,7 +108,7 @@ export class OperatorService {
 			where: {
 				id,
 			},
-			select: operatorObject,
+			select: operatorDtoObject,
 		})
 
 		if (!operator) throw new NotFoundException('Operator not found')
@@ -125,7 +126,7 @@ export class OperatorService {
 				id,
 			},
 			data: {
-				isVisible: isExists ? false : true
+				isVisible: isExists ? false : true,
 			},
 		})
 	}
@@ -150,7 +151,7 @@ export class OperatorService {
 				name: dto.name,
 				slug: generateSlug(dto.name),
 				photo: dto.photo,
-				isVisible: true
+				isVisible: true,
 			},
 		})
 	}

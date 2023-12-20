@@ -2,17 +2,33 @@ import {
 	ArrayNotEmpty,
 	IsArray,
 	IsBoolean,
+	IsEmail,
 	IsNumber,
 	IsOptional,
+	IsString,
 } from 'class-validator'
-import { UpdateProfileDto } from './update-profile.dto'
 
-export class UpdateUserDto extends UpdateProfileDto {
+export class UpdateUserDto {
+	@IsString()
+	login: string
+
+	@IsEmail()
+	@IsString()
+	email: string
+
+	@IsOptional()
+	@IsString()
+	newPassword?: string
+
+	@IsOptional()
+	@IsString()
+	avatarPath?: string
+
 	@IsOptional()
 	@ArrayNotEmpty()
 	@IsArray()
 	@IsNumber({}, { each: true })
-	promocodeIds?: number[]
+	promocodes?: number[]
 
 	@IsOptional()
 	@IsBoolean()

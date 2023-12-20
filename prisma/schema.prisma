@@ -1,7 +1,7 @@
 generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["referentialActions"]
-  binaryTargets = ["native", "rhel-openssl-1.0.x"]
+  binaryTargets   = ["native", "rhel-openssl-1.0.x"]
 }
 
 datasource db {
@@ -257,6 +257,7 @@ model Episode {
   releaseDate String? @map("release_date")
 
   isSendTelegram Boolean @default(false) @map("is_send_telegram")
+  isVisible      Boolean @default(false) @map("is_visible")
 
   season   Season? @relation(fields: [seasonId], references: [id], onDelete: Cascade)
   seasonId Int?    @map("season_id")
@@ -270,7 +271,7 @@ model Movie {
   trailers Source[] @relation("MovieTrailers")
   videos   Source[] @relation("MovieVideos")
 
-  duration Int?
+  duration Int
 
   releaseDate String? @map("release_date")
 
@@ -289,6 +290,8 @@ model Season {
 
   episodes Episode[]
 
+  isVisible Boolean @default(false) @map("is_visible")
+
   media   Media? @relation(fields: [mediaId], references: [id], onDelete: Cascade)
   mediaId Int?   @map("media_id")
 }
@@ -305,8 +308,8 @@ model Media {
   poster      String
   bigPoster   String
 
-  year      Int?
-  age       Int?
+  year      Int
+  age       Int
   countries String[]
 
   movie   Movie?

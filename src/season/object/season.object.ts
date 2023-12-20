@@ -5,5 +5,6 @@ export const seasonObject: Prisma.SeasonSelect = {
 	id: true,
 	number: true,
 	episodes: { select: episodeObject },
+	isVisible: true,
 	createdAt: true,
 }

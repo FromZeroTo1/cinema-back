@@ -62,6 +62,14 @@ export class QueryMediaDto extends PaginationDto {
 	averageRating?: string
 
 	@IsOptional()
-	@IsBoolean()
-	visible?: boolean
+	@IsString()
+	isMovie?: string
+
+	@IsOptional()
+	@IsString()
+	isSeries?: string
+
+	@IsOptional()
+	@IsString()
+	visible?: string
 }

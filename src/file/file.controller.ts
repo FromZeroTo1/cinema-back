@@ -1,4 +1,5 @@
 import {
+	Body,
 	Controller,
 	Delete,
 	Get,
@@ -15,6 +16,7 @@ import { FileInterceptor } from '@nestjs/platform-express'
 import { Auth } from 'src/auth/jwt/decorators/auth.decorator'
 import { QueryFilesDto } from './dto/query-file.dto'
 import { FileService } from './file.service'
+import { DirectoryDto } from './dto/directory.dto'
 
 @Controller('files')
 export class FileController {
@@ -37,16 +39,30 @@ export class FileController {
 	@UseInterceptors(FileInterceptor('file'))
 	async uploadFile(
 		@UploadedFile() file: Express.Multer.File,
-		@Query('folder') folder?: 'string'
+		@Query('folder') folder?: string
 	) {
 		return this.fileService.saveFiles([file], folder)
 	}
 
 	@UsePipes(new ValidationPipe())
-	@Delete(':filePath')
+	@Post('add-directory')
 	@HttpCode(200)
 	@Auth('admin')
-	async deleteFile(@Param('filePath') filePath: string) {
-		return this.fileService.deleteFile(filePath)
+	async addDirectory(@Body() dto: DirectoryDto) {
+		return this.fileService.addDirectory(dto)
+	}
+
+	@Delete('directory/:folder')
+	@HttpCode(200)
+	@Auth('admin')
+	async deleteDirectory(@Param('folder') folder: string) {
+		return this.fileService.deleteDirectory(folder)
+	}
+
+	@Delete('file/:path')
+	@HttpCode(200)
+	@Auth('admin')
+	async deleteFile(@Param('path') path: string) {
+		return this.fileService.deleteFile(path)
 	}
 }

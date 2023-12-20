@@ -26,12 +26,11 @@ export class CardController {
 		return this.cardService.byId(+id)
 	}
 
-	@UsePipes(new ValidationPipe())
 	@Post()
 	@HttpCode(200)
 	@Auth()
-	async create(@Body() dto: UpdateCardDto) {
-		return this.cardService.create(dto)
+	async create() {
+		return this.cardService.create()
 	}
 
 	@UsePipes(new ValidationPipe())

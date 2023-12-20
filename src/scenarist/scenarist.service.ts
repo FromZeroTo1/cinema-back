@@ -5,6 +5,7 @@ import { PrismaService } from 'src/prisma/prisma.service'
 import { EnumSort, QueryDto } from 'src/query-dto/query.dto'
 import { generateSlug } from 'src/utils/generate-slug'
 import { UpdateScenaristDto } from './dto/update-scenarist.dto'
+import { scenaristDtoObject } from './object/scenarist-dto.object'
 import {
 	scenaristFullestObject,
 	scenaristObject,
@@ -31,7 +32,7 @@ export class ScenaristService {
 		})
 
 		return {
-			scenarists,
+			persons: scenarists,
 			length: await this.prisma.scenarist.count({
 				where: filters,
 			}),
@@ -87,7 +88,7 @@ export class ScenaristService {
 
 	private getVisibleFilter(visibility: boolean): Prisma.ScenaristWhereInput {
 		return {
-			isVisible: visibility
+			isVisible: visibility,
 		}
 	}
 
@@ -110,7 +111,7 @@ export class ScenaristService {
 			where: {
 				id,
 			},
-			select: scenaristObject,
+			select: scenaristDtoObject,
 		})
 
 		if (!scenarist) throw new NotFoundException('Scenarist not found')
@@ -128,7 +129,7 @@ export class ScenaristService {
 				id,
 			},
 			data: {
-				isVisible: isExists ? false : true
+				isVisible: isExists ? false : true,
 			},
 		})
 	}
@@ -153,7 +154,7 @@ export class ScenaristService {
 				name: dto.name,
 				slug: generateSlug(dto.name),
 				photo: dto.photo,
-				isVisible: true
+				isVisible: true,
 			},
 		})
 	}

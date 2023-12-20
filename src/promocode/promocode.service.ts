@@ -6,6 +6,7 @@ import { EnumSort, QueryDto } from 'src/query-dto/query.dto'
 import { PromocodeCodeDto } from './dto/promocode-code.dto'
 import { QueryPromocodeDto } from './dto/query-promocode.dto'
 import { UpdatePromocodeDto } from './dto/update-promocode.dto'
+import { promocodeDtoObject } from './object/promocode-dto.object'
 import { promocodeObject } from './object/promocode.object'
 
 @Injectable()
@@ -89,7 +90,7 @@ export class PromocodeService {
 
 	private getVisibleFilter(visibility: boolean): Prisma.PromocodeWhereInput {
 		return {
-			isVisible: visibility
+			isVisible: visibility,
 		}
 	}
 
@@ -100,7 +101,7 @@ export class PromocodeService {
 			where: {
 				id,
 			},
-			select: promocodeObject,
+			select: promocodeDtoObject,
 		})
 
 		if (!promocode) throw new NotFoundException('Promocode not found')
@@ -123,15 +124,15 @@ export class PromocodeService {
 		})
 	}
 
-	async create(dto: UpdatePromocodeDto) {
-		return this.prisma.promocode.create({
+	async create() {
+		const promocode = await this.prisma.promocode.create({
 			data: {
-				sale: dto.sale,
-				code: dto.code,
-				description: dto.description,
-				expiresAt: dto.expiresAt,
+				sale: undefined,
+				code: '',
 			},
 		})
+
+		return promocode.id
 	}
 
 	async update(id: number, dto: UpdatePromocodeDto) {

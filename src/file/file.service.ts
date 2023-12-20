@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common'
 import { path } from 'app-root-path'
-import { ensureDir, readdirSync, removeSync, writeFile } from 'fs-extra'
-import * as classicPath from 'path'
+import { ensureDir, readdirSync, remove, writeFile } from 'fs-extra'
+import { join } from 'path'
+import { DirectoryDto } from './dto/directory.dto'
 import { QueryFilesDto } from './dto/query-file.dto'
 import { FileResponse } from './interface/file.interface'
 
@@ -9,25 +10,25 @@ import { FileResponse } from './interface/file.interface'
 export class FileService {
 	async getAll(dto: QueryFilesDto = {}) {
 		if (dto.folder) {
-			const folderPath = classicPath.join(path, 'uploads', dto.folder)
+			const folderPath = join(path, 'uploads', dto.folder)
 			return readdirSync(folderPath).map((file) => ({
 				name: file,
-				url: classicPath.join('/uploads', dto.folder, file).replace(/\\/g, '/'),
+				url: join('/uploads', dto.folder, file).replace(/\\/g, '/'),
 			}))
 		} else {
 			const allFiles = []
-			const baseFolderPath = classicPath.join(path, 'uploads')
+			const baseFolderPath = join(path, 'uploads')
 			const allFolders = readdirSync(baseFolderPath, { withFileTypes: true })
 				.filter((dirent) => dirent.isDirectory())
 				.map((dirent) => dirent.name)
 
 			allFolders.forEach((folder) => {
-				const folderPath = classicPath.join(baseFolderPath, folder)
+				const folderPath = join(baseFolderPath, folder)
 				const filesInFolder = readdirSync(folderPath)
 				allFiles.push(
 					...filesInFolder.map((file) => ({
 						name: file,
-						url: classicPath.join('/uploads', folder, file).replace(/\\/g, '/'),
+						url: join('/uploads', folder, file).replace(/\\/g, '/'),
 					}))
 				)
 			})
@@ -63,7 +64,20 @@ export class FileService {
 		return res
 	}
 
-	async deleteFile(path: string) {
-		removeSync(path)
+	async addDirectory(dto: DirectoryDto) {
+		const uploadFolder = `${path}/uploads/${dto.folder}`
+		await ensureDir(uploadFolder)
+	}
+
+	async deleteDirectory(folder: string) {
+		const folderPath = join(path, 'uploads', folder)
+
+		await remove(folderPath)
+	}
+
+	async deleteFile(filePath: string) {
+		const result = join(path, filePath)
+
+		await remove(result)
 	}
 }

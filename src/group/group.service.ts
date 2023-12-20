@@ -6,6 +6,7 @@ import { PrismaService } from 'src/prisma/prisma.service'
 import { EnumSort, QueryDto } from 'src/query-dto/query.dto'
 import { generateSlug } from 'src/utils/generate-slug'
 import { UpdateGroupDto } from './dto/update-group.dto'
+import { groupDtoObject } from './object/group-dto.object'
 import { groupFullestObject, groupObject } from './object/group.object'
 
 @Injectable()
@@ -21,7 +22,7 @@ export class GroupService {
 
 		const filters = this.createFilter(dto)
 
-		const groups = await this.prisma.group.findMany({
+		const affiliations = await this.prisma.group.findMany({
 			where: filters,
 			orderBy: this.getSortOption(dto.sort),
 			skip,
@@ -30,7 +31,7 @@ export class GroupService {
 		})
 
 		return {
-			groups,
+			affiliations,
 			length: await this.prisma.group.count({
 				where: filters,
 			}),
@@ -38,9 +39,9 @@ export class GroupService {
 	}
 
 	async getCollections() {
-		const { groups } = await this.getAll()
+		const { affiliations } = await this.getAll()
 		const collections = await Promise.all(
-			groups.map(async (group) => {
+			affiliations.map(async (group) => {
 				const mediaByGroup = await this.mediaService.getAll({
 					group: group.slug,
 				})
@@ -94,7 +95,7 @@ export class GroupService {
 				return [{ createdAt: 'desc' }]
 		}
 	}
- 
+
 	private createFilter(dto: QueryDto): Prisma.GroupWhereInput {
 		const filters: Prisma.GroupWhereInput[] = []
 
@@ -127,7 +128,7 @@ export class GroupService {
 
 	private getVisibleFilter(visibility: boolean): Prisma.GroupWhereInput {
 		return {
-			isVisible: visibility
+			isVisible: visibility,
 		}
 	}
 
@@ -150,7 +151,7 @@ export class GroupService {
 			where: {
 				id,
 			},
-			select: groupObject,
+			select: groupDtoObject,
 		})
 
 		if (!group) throw new NotFoundException('Group not found')
@@ -168,7 +169,7 @@ export class GroupService {
 				id,
 			},
 			data: {
-				isVisible: isExists ? false : true
+				isVisible: isExists ? false : true,
 			},
 		})
 	}
@@ -194,7 +195,7 @@ export class GroupService {
 				slug: generateSlug(dto.name),
 				description: dto.description,
 				icon: dto.icon,
-				isVisible: true
+				isVisible: true,
 			},
 		})
 	}

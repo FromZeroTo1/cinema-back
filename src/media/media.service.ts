@@ -1,24 +1,19 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
 import { Prisma } from '@prisma/client'
-import { MovieService } from 'src/movie/movie.service'
 import { PaginationService } from 'src/pagination/pagination.service'
 import { PrismaService } from 'src/prisma/prisma.service'
-import { EnumSort, QueryDto } from 'src/query-dto/query.dto'
 import { generateSlug } from 'src/utils/generate-slug'
-import { MediaMovieViewsDto } from './dto/media-views.dto'
 import { EnumMediaSort, QueryMediaDto } from './dto/query-media.dto'
-import {
-	UpdateMediaMovieDto,
-	UpdateMediaSeasonsDto,
-} from './dto/update-media.dto'
+import { UpdateMediaDto, UpdateMediaMovieDto } from './dto/update-media.dto'
 import { mediaObject } from './object/media.object'
+import { movieDtoObject } from './object/movie-dto.object'
+import { seriesDtoObject } from './object/series-dto.object'
 
 @Injectable()
 export class MediaService {
 	constructor(
 		private prisma: PrismaService,
-		private paginationService: PaginationService,
-		private movieService: MovieService
+		private paginationService: PaginationService
 	) {}
 
 	async getAll(dto: QueryMediaDto = {}) {
@@ -40,52 +35,6 @@ export class MediaService {
 			media,
 			length: await this.prisma.media.count({
 				where: filters,
-			}),
-		}
-	}
-
-	async getMovies(dto: QueryDto = {}) {
-		const { perPage, skip } = this.paginationService.getPagination(dto)
-
-		const media = await this.prisma.media.findMany({
-			where: {
-				isMovie: true,
-			},
-			orderBy: this.getSortOption(dto.sort),
-			skip,
-			take: perPage,
-			select: mediaObject,
-		})
-
-		return {
-			media,
-			length: await this.prisma.media.count({
-				where: {
-					isMovie: true,
-				},
-			}),
-		}
-	}
-
-	async getSeries(dto: QueryDto = {}) {
-		const { perPage, skip } = this.paginationService.getPagination(dto)
-
-		const media = await this.prisma.media.findMany({
-			where: {
-				isSeries: true,
-			},
-			orderBy: this.getSortOption(dto.sort),
-			skip,
-			take: perPage,
-			select: mediaObject,
-		})
-
-		return {
-			media,
-			length: await this.prisma.media.count({
-				where: {
-					isSeries: true,
-				},
 			}),
 		}
 	}
@@ -131,32 +80,6 @@ export class MediaService {
 		})
 	}
 
-	async updateMediaMovieViews({ mediaSlug }: MediaMovieViewsDto) {
-		return this.prisma.media.update({
-			where: {
-				slug: mediaSlug,
-			},
-			data: {
-				totalViews: {
-					increment: 1,
-				},
-			},
-		})
-	}
-
-	async updateMediaSeriesViews(slug: string) {
-		return this.prisma.media.update({
-			where: {
-				slug,
-			},
-			data: {
-				totalViews: {
-					increment: 1,
-				},
-			},
-		})
-	}
-
 	private createFilter(dto: QueryMediaDto): Prisma.MediaWhereInput {
 		const filters: Prisma.MediaWhereInput[] = []
 
@@ -176,7 +99,9 @@ export class MediaService {
 		if (dto.year) filters.push(this.getYearFilter(dto.year.split('|')))
 		if (dto.age) filters.push(this.getAgeFilter(dto.age.split('|')))
 		if (dto.country) filters.push(this.getCountryFilter(dto.country.split('|')))
-		if (dto.visible) filters.push(this.getVisibleFilter(dto.visible || true))
+		if (dto.isMovie) filters.push(this.getMoviesFilter(dto.isMovie))
+		if (dto.isSeries) filters.push(this.getSeriesFilter(dto.isSeries))
+		if (dto.visible) filters.push(this.getVisibleFilter(dto.visible))
 
 		return filters.length ? { AND: filters } : {}
 	}
@@ -329,37 +254,25 @@ export class MediaService {
 		}
 	}
 
-	private getVisibleFilter(visibility: boolean): Prisma.MediaWhereInput {
+	private getVisibleFilter(visibility: string): Prisma.MediaWhereInput {
 		return {
-			isVisible: visibility,
+			isVisible: !!visibility,
 		}
 	}
 
-	private getSortOption(
-		sort: EnumSort
-	): Prisma.MediaOrderByWithRelationInput[] {
-		switch (sort) {
-			case EnumSort.NEWEST:
-				return [{ createdAt: 'desc' }]
-			case EnumSort.OLDEST:
-				return [{ createdAt: 'asc' }]
-			default:
-				return [{ createdAt: 'desc' }]
+	private getMoviesFilter(isMovie: string): Prisma.MediaWhereInput {
+		return {
+			isMovie: !!isMovie,
+		}
+	}
+
+	private getSeriesFilter(isSeries: string): Prisma.MediaWhereInput {
+		return {
+			isSeries: !!isSeries,
 		}
 	}
 
 	// Admin Place
-
-	async byId(id: number) {
-		return this.prisma.media.findUnique({
-			where: {
-				id,
-			},
-			select: {
-				...mediaObject,
-			},
-		})
-	}
 
 	async toggleVisibility(id: number) {
 		const media = await this.byId(id)
@@ -376,9 +289,74 @@ export class MediaService {
 		})
 	}
 
-	async createMediaMovie() {
-		const movieId = await this.movieService.create()
+	async byId(id: number) {
+		return this.prisma.media.findUnique({
+			where: {
+				id,
+			},
+			select: {
+				...mediaObject,
+			},
+		})
+	}
 
+	async movieById(id: number) {
+		const movie = await this.prisma.media.findUnique({
+			where: {
+				id,
+				isMovie: true,
+			},
+			select: {
+				...movieDtoObject,
+			},
+		})
+
+		return {
+			...movie,
+			genres: movie.genres.map((genre) => genre.id) || [],
+			groups: movie.groups.map((group) => group.id) || [],
+			actors: movie.actors.map((actor) => actor.id) || [],
+			directors: movie.directors.map((director) => director.id) || [],
+			producers: movie.producers.map((producer) => producer.id) || [],
+			scenarists: movie.scenarists.map((scenarist) => scenarist.id) || [],
+			operators: movie.operators.map((operator) => operator.id) || [],
+		}
+	}
+
+	async seriesById(id: number) {
+		const series = await this.prisma.media.findUnique({
+			where: {
+				id,
+				isSeries: true,
+			},
+			select: {
+				...seriesDtoObject,
+			},
+		})
+
+		console.log(series)
+
+		return {
+			...series,
+			genres: series.genres ? series.genres.map((genre) => genre.id) : [],
+			groups: series.groups ? series.groups.map((group) => group.id) : [],
+			actors: series.actors ? series.actors.map((actor) => actor.id) : [],
+			directors: series.directors
+				? series.directors.map((director) => director.id)
+				: [],
+			producers: series.producers
+				? series.producers.map((producer) => producer.id)
+				: [],
+			scenarists: series.scenarists
+				? series.scenarists.map((scenarist) => scenarist.id)
+				: [],
+			operators: series.operators
+				? series.operators.map((operator) => operator.id)
+				: [],
+		}
+	}
+
+	async createMovie() {
 		const media = await this.prisma.media.create({
 			data: {
 				name: '',
@@ -388,10 +366,34 @@ export class MediaService {
 				poster: '',
 				bigPoster: '',
 				movie: {
-					connect: {
-						id: movieId,
+					create: {
+						trailers: {
+							create: {
+								language: '',
+								items: {
+									create: {
+										quality: '',
+										url: '',
+									},
+								},
+							},
+						},
+						videos: {
+							create: {
+								language: '',
+								items: {
+									create: {
+										quality: '',
+										url: '',
+									},
+								},
+							},
+						},
+						duration: 0,
 					},
 				},
+				year: 0,
+				age: 0,
 				countries: [],
 				isMovie: true,
 			},
@@ -400,7 +402,7 @@ export class MediaService {
 		return media.id
 	}
 
-	async createMediaSeries() {
+	async createSeries() {
 		const media = await this.prisma.media.create({
 			data: {
 				name: '',
@@ -409,9 +411,9 @@ export class MediaService {
 				description: '',
 				poster: '',
 				bigPoster: '',
-				year: undefined,
-				age: undefined,
 				countries: [],
+				year: 0,
+				age: 0,
 				isSeries: true,
 			},
 		})
@@ -419,7 +421,7 @@ export class MediaService {
 		return media.id
 	}
 
-	async updateMediaMovie(id: number, dto: UpdateMediaMovieDto) {
+	async updateMovie(id: number, dto: UpdateMediaMovieDto) {
 		return this.prisma.media.update({
 			where: {
 				id,
@@ -433,17 +435,17 @@ export class MediaService {
 				bigPoster: dto.bigPoster,
 				movie: {
 					update: {
+						duration: dto.movie.duration,
+						releaseDate: dto.movie.releaseDate,
 						trailers: {
 							deleteMany: {},
 							create: dto.movie.trailers.map((trailer) => ({
 								language: trailer.language,
 								items: {
-									createMany: {
-										data: trailer.items.map((item) => ({
-											quality: item.quality,
-											url: item.url,
-										})),
-									},
+									create: trailer.items.map((item) => ({
+										quality: item.quality,
+										url: item.url,
+									})),
 								},
 							})),
 						},
@@ -452,49 +454,45 @@ export class MediaService {
 							create: dto.movie.videos.map((video) => ({
 								language: video.language,
 								items: {
-									createMany: {
-										data: video.items.map((item) => ({
-											quality: item.quality,
-											url: item.url,
-										})),
-									},
+									create: video.items.map((item) => ({
+										quality: item.quality,
+										url: item.url,
+									})),
 								},
 							})),
 						},
-						duration: dto.movie.duration,
-						releaseDate: dto.movie.releaseDate,
 					},
 				},
 				groups: {
-					connect: dto.groups.map((groupId) => ({ id: groupId })),
+					connect: dto.groups.map((group) => ({ id: group })),
 				},
 				genres: {
-					connect: dto.genres.map((genreId) => ({ id: genreId })),
+					connect: dto.genres.map((genre) => ({ id: genre })),
 				},
 				actors: {
-					connect: dto.actors.map((actorId) => ({ id: actorId })),
+					connect: dto.actors.map((actor) => ({ id: actor })),
 				},
 				directors: {
-					connect: dto.directors.map((directorId) => ({ id: directorId })),
+					connect: dto.directors.map((director) => ({ id: director })),
 				},
 				producers: {
-					connect: dto.producers.map((producerId) => ({ id: producerId })),
+					connect: dto.producers.map((producer) => ({ id: producer })),
 				},
 				scenarists: {
-					connect: dto.scenarists.map((scenaristId) => ({ id: scenaristId })),
+					connect: dto.scenarists.map((scenarist) => ({ id: scenarist })),
 				},
 				operators: {
-					connect: dto.operators.map((operatorId) => ({ id: operatorId })),
+					connect: dto.operators.map((operator) => ({ id: operator })),
 				},
+				countries: dto.countries,
 				year: dto.year,
 				age: dto.age,
-				countries: dto.countries,
 				isVisible: true,
 			},
 		})
 	}
 
-	async updateMediaSeries(id: number, dto: UpdateMediaSeasonsDto) {
+	async updateSeries(id: number, dto: UpdateMediaDto) {
 		return this.prisma.media.update({
 			where: {
 				id,
@@ -506,74 +504,30 @@ export class MediaService {
 				description: dto.description,
 				poster: dto.poster,
 				bigPoster: dto.bigPoster,
-				seasons: {
-					deleteMany: {},
-					create: dto.seasons.map((season) => ({
-						number: season.number,
-						episodes: {
-							create: season.episodes.map((episode) => ({
-								number: episode.number,
-								excerpt: episode.excerpt,
-								description: episode.description,
-								poster: episode.poster,
-								bigPoster: episode.bigPoster,
-								duration: episode.duration,
-								releaseDate: episode.releaseDate,
-								trailers: {
-									create: episode.trailers.map((trailer) => ({
-										language: trailer.language,
-										items: {
-											createMany: {
-												data: trailer.items.map((item) => ({
-													quality: item.quality,
-													url: item.url,
-												})),
-											},
-										},
-									})),
-								},
-								videos: {
-									create: episode.videos.map((video) => ({
-										language: video.language,
-										items: {
-											createMany: {
-												data: video.items.map((item) => ({
-													quality: item.quality,
-													url: item.url,
-												})),
-											},
-										},
-									})),
-								},
-							})),
-						},
-					})),
-				},
 				groups: {
-					connect: dto.groups.map((groupId) => ({ id: groupId })),
+					connect: dto.groups.map((group) => ({ id: group })),
 				},
 				genres: {
-					connect: dto.genres.map((genreId) => ({ id: genreId })),
+					connect: dto.genres.map((genre) => ({ id: genre })),
 				},
 				actors: {
-					connect: dto.actors.map((actorId) => ({ id: actorId })),
+					connect: dto.actors.map((actor) => ({ id: actor })),
 				},
 				directors: {
-					connect: dto.directors.map((directorId) => ({ id: directorId })),
+					connect: dto.directors.map((director) => ({ id: director })),
 				},
 				producers: {
-					connect: dto.producers.map((producerId) => ({ id: producerId })),
+					connect: dto.producers.map((producer) => ({ id: producer })),
 				},
 				scenarists: {
-					connect: dto.scenarists.map((scenaristId) => ({ id: scenaristId })),
+					connect: dto.scenarists.map((scenarist) => ({ id: scenarist })),
 				},
 				operators: {
-					connect: dto.operators.map((operatorId) => ({ id: operatorId })),
+					connect: dto.operators.map((operator) => ({ id: operator })),
 				},
+				countries: dto.countries,
 				year: dto.year,
 				age: dto.age,
-				countries: dto.countries,
-				isSeries: true,
 				isVisible: true,
 			},
 		})

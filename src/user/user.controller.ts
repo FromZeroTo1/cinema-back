@@ -13,7 +13,6 @@ import {
 } from '@nestjs/common'
 import { Auth } from 'src/auth/jwt/decorators/auth.decorator'
 import { CurrentUser } from 'src/auth/jwt/decorators/user.decorator'
-import { MediaIdDto } from 'src/media/dto/media-id.dto'
 import { UserQueryDto } from './dto/query-user.dto'
 import { UpdateProfileDto } from './dto/update-profile.dto'
 import { UpdateUserDto } from './dto/update-user.dto'

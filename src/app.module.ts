@@ -19,6 +19,7 @@ import { PrismaService } from './prisma/prisma.service'
 import { ProducerModule } from './producer/producer.module'
 import { PromocodeModule } from './promocode/promocode.module'
 import { ScenaristModule } from './scenarist/scenarist.module'
+import { SeasonModule } from './season/season.module'
 import { SubscribeModule } from './subscribe/subscribe.module'
 import { TariffModule } from './tariff/tariff.module'
 import { UserModule } from './user/user.module'
@@ -29,6 +30,7 @@ import { UserModule } from './user/user.module'
 		UserModule,
 		AuthModule,
 		MediaModule,
+		SeasonModule,
 		GenreModule,
 		ActorModule,
 		DirectorModule,
