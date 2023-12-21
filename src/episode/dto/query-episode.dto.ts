@@ -2,7 +2,7 @@ import { IsEnum, IsOptional, IsString } from 'class-validator'
 import { PaginationDto } from 'src/pagination/dto/pagination.dto'
 import { EnumSort } from 'src/query-dto/query.dto'
 
-export class UserQueryDto extends PaginationDto {
+export class EpisodeQueryDto extends PaginationDto {
 	@IsOptional()
 	@IsEnum(EnumSort)
 	sort?: EnumSort
@@ -10,6 +10,9 @@ export class UserQueryDto extends PaginationDto {
 	@IsOptional()
 	@IsString()
 	searchTerm?: string
+
+	@IsString()
+	seasonId: string
 
 	@IsOptional()
 	@IsString()

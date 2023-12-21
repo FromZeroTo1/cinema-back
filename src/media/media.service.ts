@@ -101,7 +101,11 @@ export class MediaService {
 		if (dto.country) filters.push(this.getCountryFilter(dto.country.split('|')))
 		if (dto.isMovie) filters.push(this.getMoviesFilter(dto.isMovie))
 		if (dto.isSeries) filters.push(this.getSeriesFilter(dto.isSeries))
-		if (dto.visible) filters.push(this.getVisibleFilter(dto.visible))
+		if (dto.isVisible) {
+			filters.push(this.getVisibleFilter(dto.isVisible))
+		} else {
+			filters.push(this.getVisibleFilter('true'))
+		}
 
 		return filters.length ? { AND: filters } : {}
 	}
@@ -254,9 +258,9 @@ export class MediaService {
 		}
 	}
 
-	private getVisibleFilter(visibility: string): Prisma.MediaWhereInput {
+	private getVisibleFilter(isVisible: string): Prisma.MediaWhereInput {
 		return {
-			isVisible: !!visibility,
+			isVisible: !!isVisible,
 		}
 	}
 

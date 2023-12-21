@@ -7,22 +7,25 @@ import {
 	Param,
 	Post,
 	Put,
+	Query,
 	UsePipes,
 	ValidationPipe,
 } from '@nestjs/common'
 import { Auth } from 'src/auth/jwt/decorators/auth.decorator'
 import { UpdateEpisodeDto } from './dto/update-episode.dto'
 import { EpisodeService } from './episode.service'
+import { EpisodeQueryDto } from './dto/query-episode.dto'
 
 @Controller('episodes')
 export class EpisodeController {
 	constructor(private readonly episodeService: EpisodeService) {}
 	// Admin Place
 
-	@Get('season/:id')
+	@UsePipes(new ValidationPipe())
 	@Auth('admin')
-	async getAll(@Param('id') id: string) {
-		return this.episodeService.getAll(+id)
+	@Get()
+	async getAll(@Query() queryDto: EpisodeQueryDto) {
+		return this.episodeService.getAll(queryDto)
 	}
 
 	@Put('toggle-visibility/:id')

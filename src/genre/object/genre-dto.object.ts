@@ -4,4 +4,5 @@ export const genreDtoObject: Prisma.GenreSelect = {
 	name: true,
 	description: true,
 	icon: true,
+	isVisible: true,
 }

@@ -71,5 +71,5 @@ export class QueryMediaDto extends PaginationDto {
 
 	@IsOptional()
 	@IsString()
-	visible?: string
+	isVisible?: string
 }

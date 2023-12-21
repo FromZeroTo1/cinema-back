@@ -7,10 +7,12 @@ import {
 	Param,
 	Post,
 	Put,
+	Query,
 	UsePipes,
 	ValidationPipe,
 } from '@nestjs/common'
 import { Auth } from 'src/auth/jwt/decorators/auth.decorator'
+import { SeasonQueryDto } from './dto/query-season.dto'
 import { UpdateSeasonDto } from './dto/update-season.dto'
 import { SeasonService } from './season.service'
 
@@ -20,10 +22,11 @@ export class SeasonController {
 
 	// Admin Place
 
-	@Get('media/:id')
+	@UsePipes(new ValidationPipe())
 	@Auth('admin')
-	async getAll(@Param('id') id: string) {
-		return this.seasonService.getAll(+id)
+	@Get()
+	async getAll(@Query() queryDto: SeasonQueryDto) {
+		return this.seasonService.getAll(queryDto)
 	}
 
 	@Put('toggle-visibility/:id')

@@ -64,7 +64,11 @@ export class PromocodeService {
 
 		if (dto.searchTerm) filters.push(this.getSearchTermFilter(dto.searchTerm))
 
-		if (dto.visible) filters.push(this.getVisibleFilter(dto.visible || true))
+		if (dto.isVisible) {
+			filters.push(this.getVisibleFilter(dto.isVisible))
+		} else {
+			filters.push(this.getVisibleFilter('true'))
+		}
 
 		return filters.length ? { AND: filters } : {}
 	}
@@ -88,9 +92,9 @@ export class PromocodeService {
 		}
 	}
 
-	private getVisibleFilter(visibility: boolean): Prisma.PromocodeWhereInput {
+	private getVisibleFilter(isVisible: string): Prisma.PromocodeWhereInput {
 		return {
-			isVisible: visibility,
+			isVisible: !!isVisible,
 		}
 	}
 

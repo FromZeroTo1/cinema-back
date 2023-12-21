@@ -109,14 +109,18 @@ export class UserService {
 		const filters: Prisma.UserWhereInput[] = []
 
 		if (dto.searchTerm) filters.push(this.getSearchTermFilter(dto.searchTerm))
-		if (dto.visible) filters.push(this.getVisibleFilter(dto.visible || true))
+		if (dto.isVisible) {
+			filters.push(this.getVisibleFilter(dto.isVisible))
+		} else {
+			filters.push(this.getVisibleFilter('true'))
+		}
 
 		return filters.length ? { AND: filters } : {}
 	}
 
-	private getVisibleFilter(visibility: boolean): Prisma.UserWhereInput {
+	private getVisibleFilter(isVisible: string): Prisma.UserWhereInput {
 		return {
-			isVisible: visibility,
+			isVisible: !!isVisible,
 		}
 	}
 

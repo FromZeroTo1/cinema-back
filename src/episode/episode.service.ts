@@ -1,26 +1,108 @@
 import { Injectable, NotFoundException } from '@nestjs/common'
+import { Prisma } from '@prisma/client'
+import { PaginationService } from 'src/pagination/pagination.service'
 import { PrismaService } from 'src/prisma/prisma.service'
+import { EnumSort } from 'src/query-dto/query.dto'
+import { EpisodeQueryDto } from './dto/query-episode.dto'
 import { UpdateEpisodeDto } from './dto/update-episode.dto'
 import { episodeDtoObject } from './object/episode-dto.object'
 import { episodeObject } from './object/episode.object'
 
 @Injectable()
 export class EpisodeService {
-	constructor(private prisma: PrismaService) {}
+	constructor(
+		private prisma: PrismaService,
+		private paginationService: PaginationService
+	) {}
 
-	async getAll(seasonId: number) {
+	async getAll(dto: EpisodeQueryDto) {
+		const { perPage, skip } = this.paginationService.getPagination(dto)
+
+		const filters = this.createFilter(dto)
+
 		const episodes = await this.prisma.episode.findMany({
-			where: {
-				seasonId,
-			},
+			where: filters,
+			orderBy: this.getSortOption(dto.sort),
+			skip,
+			take: perPage,
 			select: episodeObject,
 		})
 
 		return {
 			episodes,
 			length: await this.prisma.episode.count({
-				where: { seasonId },
+				where: filters,
 			}),
+		}
+	}
+
+	private getSortOption(
+		sort: EnumSort
+	): Prisma.EpisodeOrderByWithRelationInput[] {
+		switch (sort) {
+			case EnumSort.NEWEST:
+				return [{ createdAt: 'desc' }]
+			case EnumSort.OLDEST:
+				return [{ createdAt: 'asc' }]
+			default:
+				return [{ createdAt: 'desc' }]
+		}
+	}
+
+	private createFilter(dto: EpisodeQueryDto): Prisma.EpisodeWhereInput {
+		const filters: Prisma.EpisodeWhereInput[] = []
+
+		filters.push(this.getSeasonFilter(dto.seasonId))
+
+		if (dto.searchTerm) filters.push(this.getSearchTermFilter(dto.searchTerm))
+
+		if (dto.isVisible) {
+			filters.push(this.getVisibleFilter(dto.isVisible))
+		} else {
+			filters.push(this.getVisibleFilter('true'))
+		}
+
+		return filters.length ? { AND: filters } : {}
+	}
+
+	private getSearchTermFilter(searchTerm: string): Prisma.EpisodeWhereInput {
+		const searchTermAsNumber = parseInt(searchTerm, 10)
+
+		if (!isNaN(searchTermAsNumber)) {
+			return {
+				OR: [
+					{
+						number: {
+							equals: searchTermAsNumber,
+						},
+					},
+					{
+						description: {
+							contains: searchTerm,
+							mode: 'insensitive',
+						},
+					},
+				],
+			}
+		} else {
+			return {
+				description: {
+					contains: searchTerm,
+					mode: 'insensitive',
+				},
+			}
+		}
+	}
+
+	private getSeasonFilter(seasonId: string): Prisma.EpisodeWhereInput {
+		return {
+			seasonId: +seasonId,
+		}
+	}
+
+	private getVisibleFilter(isVisible: string): Prisma.EpisodeWhereInput {
+		return {
+			isVisible: !!isVisible,
 		}
 	}
 

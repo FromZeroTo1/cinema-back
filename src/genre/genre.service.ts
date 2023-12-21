@@ -6,8 +6,8 @@ import { PrismaService } from 'src/prisma/prisma.service'
 import { EnumSort, QueryDto } from 'src/query-dto/query.dto'
 import { generateSlug } from 'src/utils/generate-slug'
 import { UpdateGenreDto } from './dto/update-genre.dto'
-import { genreFullestObject, genreObject } from './object/genre.object'
 import { genreDtoObject } from './object/genre-dto.object'
+import { genreFullestObject, genreObject } from './object/genre.object'
 
 @Injectable()
 export class GenreService {
@@ -100,7 +100,11 @@ export class GenreService {
 		if (dto.searchTerm) filters.push(this.getSearchTermFilter(dto.searchTerm))
 
 		if (dto.media) filters.push(this.getMediaFilter(dto.media.split('|')))
-		if (dto.visible) filters.push(this.getVisibleFilter(dto.visible || true))
+		if (dto.isVisible) {
+			filters.push(this.getVisibleFilter(dto.isVisible))
+		} else {
+			filters.push(this.getVisibleFilter('true'))
+		}
 
 		return filters.length ? { AND: filters } : {}
 	}
@@ -124,9 +128,9 @@ export class GenreService {
 		}
 	}
 
-	private getVisibleFilter(visibility: boolean): Prisma.GenreWhereInput {
+	private getVisibleFilter(isVisible: string): Prisma.GenreWhereInput {
 		return {
-			isVisible: visibility,
+			isVisible: !!isVisible,
 		}
 	}
 

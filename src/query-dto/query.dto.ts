@@ -20,6 +20,6 @@ export class QueryDto extends PaginationDto {
 	media?: string
 
 	@IsOptional()
-	@IsBoolean()
-	visible?: boolean
+	@IsString()
+	isVisible?: string
 }

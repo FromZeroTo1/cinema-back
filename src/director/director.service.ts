@@ -69,7 +69,11 @@ export class DirectorService {
 		if (dto.searchTerm) filters.push(this.getSearchTermFilter(dto.searchTerm))
 
 		if (dto.media) filters.push(this.getMediaFilter(dto.media.split('|')))
-		if (dto.visible) filters.push(this.getVisibleFilter(dto.visible || true))
+		if (dto.isVisible) {
+			filters.push(this.getVisibleFilter(dto.isVisible))
+		} else {
+			filters.push(this.getVisibleFilter('true'))
+		}
 
 		return filters.length ? { AND: filters } : {}
 	}
@@ -83,9 +87,9 @@ export class DirectorService {
 		}
 	}
 
-	private getVisibleFilter(visibility: boolean): Prisma.DirectorWhereInput {
+	private getVisibleFilter(isVisible: string): Prisma.DirectorWhereInput {
 		return {
-			isVisible: visibility,
+			isVisible: !!isVisible,
 		}
 	}
 

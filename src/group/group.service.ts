@@ -102,7 +102,11 @@ export class GroupService {
 		if (dto.searchTerm) filters.push(this.getSearchTermFilter(dto.searchTerm))
 
 		if (dto.media) filters.push(this.getMediaFilter(dto.media.split('|')))
-		if (dto.visible) filters.push(this.getVisibleFilter(dto.visible || true))
+		if (dto.isVisible) {
+			filters.push(this.getVisibleFilter(dto.isVisible))
+		} else {
+			filters.push(this.getVisibleFilter('true'))
+		}
 
 		return filters.length ? { AND: filters } : {}
 	}
@@ -126,9 +130,9 @@ export class GroupService {
 		}
 	}
 
-	private getVisibleFilter(visibility: boolean): Prisma.GroupWhereInput {
+	private getVisibleFilter(isVisible: string): Prisma.GroupWhereInput {
 		return {
-			isVisible: visibility,
+			isVisible: !!isVisible,
 		}
 	}
 
