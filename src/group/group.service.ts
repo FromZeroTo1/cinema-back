@@ -102,12 +102,8 @@ export class GroupService {
 		if (dto.searchTerm) filters.push(this.getSearchTermFilter(dto.searchTerm))
 
 		if (dto.media) filters.push(this.getMediaFilter(dto.media.split('|')))
-		if (dto.isVisible) {
-			filters.push(this.getVisibleFilter(dto.isVisible))
-		} else {
-			filters.push(this.getVisibleFilter('true'))
-		}
-
+		if (dto.isVisible) filters.push(this.getVisibleFilter(dto.isVisible))
+		
 		return filters.length ? { AND: filters } : {}
 	}
 

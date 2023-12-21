@@ -71,8 +71,6 @@ export class OperatorService {
 		if (dto.media) filters.push(this.getMediaFilter(dto.media.split('|')))
 		if (dto.isVisible) {
 			filters.push(this.getVisibleFilter(dto.isVisible))
-		} else {
-			filters.push(this.getVisibleFilter('true'))
 		}
 
 		return filters.length ? { AND: filters } : {}

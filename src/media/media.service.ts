@@ -103,8 +103,6 @@ export class MediaService {
 		if (dto.isSeries) filters.push(this.getSeriesFilter(dto.isSeries))
 		if (dto.isVisible) {
 			filters.push(this.getVisibleFilter(dto.isVisible))
-		} else {
-			filters.push(this.getVisibleFilter('true'))
 		}
 
 		return filters.length ? { AND: filters } : {}

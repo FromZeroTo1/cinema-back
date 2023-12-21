@@ -111,8 +111,6 @@ export class UserService {
 		if (dto.searchTerm) filters.push(this.getSearchTermFilter(dto.searchTerm))
 		if (dto.isVisible) {
 			filters.push(this.getVisibleFilter(dto.isVisible))
-		} else {
-			filters.push(this.getVisibleFilter('true'))
 		}
 
 		return filters.length ? { AND: filters } : {}
