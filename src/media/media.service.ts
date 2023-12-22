@@ -336,8 +336,6 @@ export class MediaService {
 			},
 		})
 
-		console.log(series)
-
 		return {
 			...series,
 			genres: series.genres ? series.genres.map((genre) => genre.id) : [],
